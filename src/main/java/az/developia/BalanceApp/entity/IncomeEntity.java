@@ -9,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -18,17 +20,18 @@ public class IncomeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(hidden = true)
+ @Schema(hidden = true)
     private Long id;
 
-    @Column(nullable = false)
+@NotNull(message = "Amount cannot be null")
     private Double amount;
 
+  @Size(max = 255, message = "Description cannot exceed 255 characters")
     private String description;
+  @Column(name = "user_id", nullable = false)
+ @NotNull(message = "User ID cannot be null")
+    private Long userId;
 
-    @Column(nullable = false)
-    private Long userId; 
-    
-    
-    private LocalDate date; // Новое поле
+   // @NotNull(message = "Date cannot be null")
+    private LocalDate date;
 }

@@ -1,13 +1,19 @@
 package az.developia.BalanceApp;
 
+import java.io.File;
+
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-public class BalanceAppApplication {
 
+@SpringBootApplication
+@EnableAutoConfiguration
+
+public class BalanceAppApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(BalanceAppApplication.class, args);
+	SpringApplication.run(BalanceAppApplication.class, args);
+
 	}
 
 }
