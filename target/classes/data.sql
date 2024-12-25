@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create the 'income' table
 CREATE TABLE IF NOT EXISTS income (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    amount DECIMAL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,  -- Updated to DECIMAL
     description VARCHAR(255),
-    userId BIGINT, -- BIGINT для соответствия user.id
+    user_id BIGINT,  -- Consistent column naming
     date DATE
 );
 
@@ -19,18 +19,18 @@ CREATE TABLE IF NOT EXISTS income (
 CREATE TABLE IF NOT EXISTS expense (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(255),
-    amount DOUBLE NOT NULL,
-    user_id BIGINT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,  -- Updated to DECIMAL
+    user_id BIGINT NOT NULL,  -- Consistent column naming
     date DATE NOT NULL
 );
 
 -- Create the 'balances' table
 CREATE TABLE IF NOT EXISTS balances (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    total_income DOUBLE NOT NULL,
-    total_expense DOUBLE NOT NULL,
-    balance DOUBLE NOT NULL
+    user_id BIGINT NOT NULL,  -- Consistent column naming
+    total_income DECIMAL(10, 2) NOT NULL,  -- Updated to DECIMAL
+    total_expense DECIMAL(10, 2) NOT NULL,  -- Updated to DECIMAL
+    balance DECIMAL(10, 2) NOT NULL  -- Updated to DECIMAL
 );
 
 -- Insert data into 'users' table
@@ -41,7 +41,8 @@ VALUES
     ('kamran', '12345', 'kamran@example.com');
 
 -- Insert data into 'income' table
-INSERT INTO income (amount, description, userId, date) VALUES
+INSERT INTO income (amount, description, user_id, date) 
+VALUES
     (1000.00, 'Salary', 1, '2024-01-01'),
     (250.00, 'Freelance work', 2, '2024-01-10'),
     (600.00, 'Investment income', 3, '2024-01-15');
@@ -54,7 +55,8 @@ VALUES
     ('Entertainment', 80.00, 3, '2024-01-12');
 
 -- Insert data into 'balances' table
-INSERT INTO balances (user_id, total_income, total_expense, balance) VALUES
+INSERT INTO balances (user_id, total_income, total_expense, balance) 
+VALUES
     (1, 1000.00, 150.00, 850.00),
     (2, 250.00, 500.00, -250.00),
     (3, 600.00, 80.00, 520.00);
