@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    mail VARCHAR(255)
+    mail VARCHAR(255),
+    enabled BOOLEAN NOT NULL DEFAULT true  -- Added 'enabled' column with default value true
 );
 
 -- Create the 'income' table
@@ -34,11 +35,11 @@ CREATE TABLE IF NOT EXISTS balances (
 );
 
 -- Insert data into 'users' table
-INSERT INTO users (username, password, mail)
+INSERT INTO users (username, password, mail, enabled)
 VALUES
-    ('elcin', '12345', 'elcin@example.com'),
-    ('narmin', '12345', 'narmin@example.com'),
-    ('kamran', '12345', 'kamran@example.com');
+    ('elcin', '12345', 'elcin@example.com', true),
+    ('narmin', '12345', 'narmin@example.com', true),
+    ('kamran', '12345', 'kamran@example.com', true);
 
 -- Insert data into 'income' table
 INSERT INTO income (amount, description, user_id, date) 

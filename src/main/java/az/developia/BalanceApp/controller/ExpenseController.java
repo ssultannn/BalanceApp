@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import az.developia.BalanceApp.entity.ExpenseEntity;
+import az.developia.BalanceApp.entity.ExpensePlanEntity;
 import az.developia.BalanceApp.enums.SortBy;
 import az.developia.BalanceApp.exception.MyException;
 import az.developia.BalanceApp.response.ExpenseResponse;
+import az.developia.BalanceApp.response.ExpenseStatus;
 import az.developia.BalanceApp.service.ExpenseService;
 @RestController
 @RequestMapping("/expense")
@@ -68,6 +70,10 @@ public class ExpenseController {
     public ResponseEntity<Void> deleteExpense(@PathVariable Long expenseId) {
         expenseService.deleteExpense(expenseId);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/check-expenses")
+    public ExpenseStatus checkExpenses(@RequestBody ExpensePlanEntity plan) {
+        return expenseService.checkExpenseStatus(plan);
     }
 }
 

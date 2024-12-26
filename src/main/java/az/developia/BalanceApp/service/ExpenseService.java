@@ -1,6 +1,7 @@
 package az.developia.BalanceApp.service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import az.developia.BalanceApp.entity.ExpenseEntity;
+import az.developia.BalanceApp.entity.ExpensePlanEntity;
 import az.developia.BalanceApp.exception.MyException;
 import az.developia.BalanceApp.repository.ExpenseRepository;
 import az.developia.BalanceApp.response.ExpenseResponse;
+import az.developia.BalanceApp.response.ExpenseStatus;
 
 @Service
 public class ExpenseService {
@@ -94,4 +97,31 @@ public class ExpenseService {
 				.orElseThrow(() -> new MyException("Expense not found"));
 		expenseRepository.delete(expense);
 	}
+	public ExpenseStatus checkExpenseStatus(ExpensePlanEntity plan) {
+	    long daysBetween = ChronoUnit.DAYS.between(plan.getStartDate(), plan.getEndDate());
+	    double dailyAmount = plan.getTotalAmount() / daysBetween;
+
+	    long daysPassed = ChronoUnit.DAYS.between(plan.getStartDate(), LocalDate.now());
+	    double expectedExpenses = dailyAmount * daysPassed;
+
+	    double difference = plan.getActualExpenses() - expectedExpenses;
+	    ExpenseStatus status = new ExpenseStatus();
+
+	    if (plan.getActualExpenses() > expectedExpenses) {
+	        status.setStatus("negative");
+	        status.setMessage("Your expenses exceed the plan, you need to reduce your spending.");
+	        status.setDifference(difference);
+	    } else if (plan.getActualExpenses() < expectedExpenses) {
+	        status.setStatus("positive");
+	        status.setMessage("Your expenses are below the plan, you're on the right track!");
+	        status.setDifference(difference);
+	    } else {
+	        status.setStatus("neutral");
+	        status.setMessage("Your expenses are in line with the plan.");
+	        status.setDifference(difference);
+	    }
+
+	    return status;
+	}
+
 }

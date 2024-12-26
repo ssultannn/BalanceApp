@@ -16,46 +16,44 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-	@Autowired
-	private DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-	@Bean
-	public UserDetailsService userDetailsService() {
-		JdbcDaoImpl jdbcDao = new JdbcDaoImpl();
-		jdbcDao.setDataSource(dataSource);
-		return jdbcDao;
-	}
+    @Bean
+    public UserDetailsService userDetailsService() {
+        JdbcDaoImpl jdbcDao = new JdbcDaoImpl();
+        jdbcDao.setDataSource(dataSource);
+        return jdbcDao;
+    }
 
-	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService());
-
-		return authProvider;
-	}
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        return authProvider;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
-            
-                .authorizeRequests()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .anyRequest().permitAll()  // Все остальные запросы тоже разрешены
+            .authorizeRequests()
+            .requestMatchers("/login", "/register").permitAll()  // Permit access to login and register for everyone
+            .requestMatchers("/h2-console/**").permitAll()  // Allow H2 console access
+            .requestMatchers("/swagger-ui/**").permitAll()  // Swagger UI access
+            .requestMatchers("/v3/api-docs/**").permitAll()  // Swagger API docs access
+            .anyRequest().permitAll()  // All other requests require authentication
             .and()
-                .httpBasic() // Use basic authentication
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .headers().frameOptions().disable() // Allow the use of frames for H2 Console
-                .and()
-                .build();
+            .httpBasic() // Use basic authentication
+            .and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .headers().frameOptions().disable()  // Allow the use of frames for H2 Console
+            .and()
+            .build();
     }
 }
