@@ -13,33 +13,43 @@ import org.springframework.web.bind.annotation.RestController;
 
 import az.developia.BalanceApp.entity.ExpenseEntity;
 import az.developia.BalanceApp.entity.IncomeEntity;
+import az.developia.BalanceApp.exception.MyException;
 import az.developia.BalanceApp.response.BalanceListsResponse;
+import az.developia.BalanceApp.security.UserContext;
 import az.developia.BalanceApp.service.ExpenseService;
 import az.developia.BalanceApp.service.IncomeService;
-
 @RestController
 @RequestMapping("/IncomeAndExpense")
 public class IncomeAndExpense {
-	@Autowired
-	private IncomeService incomeService;
 
-	@Autowired
-	private ExpenseService expenseService;
+    @Autowired
+    private IncomeService incomeService;
 
-	@GetMapping("/filtered")
-	public ResponseEntity<Object> getBalanceBetweenDates(@RequestParam(value = "userId") Long userId,
-			@RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-			@RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    @Autowired
+    private ExpenseService expenseService;
 
-		// Fetching filtered income and expense data
-		List<IncomeEntity> incomes = incomeService.getFilteredIncomesByUser(userId, "date", startDate, endDate);
-		List<ExpenseEntity> expenses = expenseService.getFilteredExpensesByUser(userId, "date", startDate, endDate);
+    @Autowired
+    private UserContext userContext;  
 
-		// Creating a response object
-		BalanceListsResponse response = new BalanceListsResponse();
-		response.setIncomes(incomes);
-		response.setExpenses(expenses);
+    @GetMapping("/filtered")
+    public ResponseEntity<Object> getBalanceBetweenDates(
+            @RequestParam(value = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-		return ResponseEntity.ok(response);
-	}
+        Long userId = userContext.getCurrentUserId();  // Извлекаем userId из контекста
+        if (userId == null) {
+            throw new MyException("User ID is required in context!");
+        }
+
+        // Fetching filtered income and expense data
+        List<IncomeEntity> incomes = incomeService.getFilteredIncomesByUser(userId, "date", startDate, endDate);
+        List<ExpenseEntity> expenses = expenseService.getFilteredExpensesByUser(userId, "date", startDate, endDate);
+
+        // Creating a response object
+        BalanceListsResponse response = new BalanceListsResponse();
+        response.setIncomes(incomes);
+        response.setExpenses(expenses);
+
+        return ResponseEntity.ok(response);
+    }
 }

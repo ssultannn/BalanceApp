@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import az.developia.BalanceApp.entity.IncomeEntity;
 import az.developia.BalanceApp.exception.MyException;
 import az.developia.BalanceApp.repository.IncomeRepository;
-import az.developia.BalanceApp.response.IncomeResponse;
 @Service
 public class IncomeService {
 
@@ -19,10 +18,17 @@ public class IncomeService {
     private IncomeRepository incomeRepository;
 
     public IncomeEntity addIncome(IncomeEntity income) {
+        Long userId = income.getUserId();  // userId передаем через IncomeEntity
+        if (userId == null) {
+            throw new MyException("User ID is required!");
+        }
         return incomeRepository.save(income);
     }
 
     public List<IncomeEntity> getIncomesByUser(Long userId) {
+        if (userId == null) {
+            throw new MyException("User ID is required!");
+        }
         return incomeRepository.findByUserId(userId);
     }
 
@@ -56,19 +62,28 @@ public class IncomeService {
         return incomes;
     }
 
-    // Update income
     public IncomeEntity updateIncome(Long incomeId, IncomeEntity updatedIncome) {
+        Long userId = updatedIncome.getUserId();  // userId передаем через IncomeEntity
+        if (userId == null) {
+            throw new MyException("User ID is required!");
+        }
+
         IncomeEntity income = incomeRepository.findById(incomeId).orElseThrow(() -> new MyException("Income not found"));
+        if (!income.getUserId().equals(userId)) {
+            throw new MyException("Income does not belong to the current user");
+        }
+
         income.setAmount(updatedIncome.getAmount());
         income.setDate(updatedIncome.getDate() != null ? updatedIncome.getDate() : LocalDate.now());
-        
-       income.setDescription(updatedIncome.getDescription());
+        income.setDescription(updatedIncome.getDescription());
         return incomeRepository.save(income);
     }
 
-    // Delete income
-    public void deleteIncome(Long incomeId) {
+    public void deleteIncome(Long incomeId, Long userId) {
         IncomeEntity income = incomeRepository.findById(incomeId).orElseThrow(() -> new MyException("Income not found"));
+        if (!income.getUserId().equals(userId)) {
+            throw new MyException("Income does not belong to the current user");
+        }
         incomeRepository.delete(income);
     }
 }

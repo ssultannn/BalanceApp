@@ -4,14 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import az.developia.BalanceApp.entity.BalanceEntity;
 import az.developia.BalanceApp.entity.UserEntity;
 import az.developia.BalanceApp.exception.MyException;
-import az.developia.BalanceApp.repository.UserRepository;
+import az.developia.BalanceApp.service.UserService;
+import az.developia.BalanceApp.service.BalanceService;
 import az.developia.BalanceApp.request.UserLoginRequest;
 import az.developia.BalanceApp.response.BalanceResponse;
-import az.developia.BalanceApp.service.BalanceService;
-import az.developia.BalanceApp.service.UserService;
+import az.developia.BalanceApp.security.UserContext;
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -21,6 +20,9 @@ public class UserController {
 
     @Autowired
     private BalanceService balanceService;
+
+    @Autowired
+    private UserContext userContext;  
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserEntity user) {
@@ -38,18 +40,20 @@ public class UserController {
         return userService.login(user);
     }
 
-    @PostMapping("/{userId}/balance")
-    public ResponseEntity<BalanceResponse> calculateAndSaveBalance(@PathVariable Long userId) {
+    @PostMapping("/balance")
+    public ResponseEntity<BalanceResponse> calculateAndSaveBalance() {
+        Long userId = userContext.getCurrentUserId();  // Извлекаем userId из контекста
         if (userId == null) {
-            throw new MyException("User ID is required!");
+            throw new MyException("User ID is required in context!");
         }
         return ResponseEntity.ok(balanceService.calculateAndSaveBalance(userId));
     }
 
-    @GetMapping("/{userId}/balance")
-    public ResponseEntity<BalanceResponse> getBalance(@PathVariable Long userId) {
+    @GetMapping("/balance")
+    public ResponseEntity<BalanceResponse> getBalance() {
+        Long userId = userContext.getCurrentUserId();  // Извлекаем userId из контекста
         if (userId == null) {
-            throw new MyException("User ID is required!");
+            throw new MyException("User ID is required in context!");
         }
         return ResponseEntity.ok(balanceService.getBalanceByUserId(userId));
     }

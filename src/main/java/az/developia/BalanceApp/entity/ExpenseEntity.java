@@ -26,8 +26,8 @@ public class ExpenseEntity {
 
 @NotNull(message = "Amount cannot be null")
 	private Double amount;
-
 @Column(name = "user_id", nullable = false)
+@Schema(hidden = true)  // Скрываем userId
 @NotNull(message = "User ID cannot be null")
 	private Long userId;
 

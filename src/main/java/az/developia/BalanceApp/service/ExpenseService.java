@@ -13,6 +13,7 @@ import az.developia.BalanceApp.entity.ExpenseEntity;
 import az.developia.BalanceApp.entity.ExpensePlanEntity;
 import az.developia.BalanceApp.exception.MyException;
 import az.developia.BalanceApp.repository.ExpenseRepository;
+import az.developia.BalanceApp.repository.UserRepository;
 import az.developia.BalanceApp.response.ExpenseResponse;
 import az.developia.BalanceApp.response.ExpenseStatus;
 
@@ -22,9 +23,9 @@ public class ExpenseService {
 	@Autowired
 	private ExpenseRepository expenseRepository;
 
-	public ExpenseEntity addExpense(ExpenseEntity expense) {
-		return expenseRepository.save(expense);
-	}
+	   public ExpenseEntity addExpense(ExpenseEntity expense) {
+	        return expenseRepository.save(expense);
+	    }
 
 	public List<ExpenseResponse> getExpensesByUser(Long userId) {
 		return expenseRepository.findByUserId(userId).stream().map(this::toExpenseResponse)
@@ -81,22 +82,28 @@ public class ExpenseService {
 		return expenses;
 	}
 
-	// Update expense
-	public ExpenseEntity updateExpense(Long expenseId, ExpenseEntity updatedExpense) {
-		ExpenseEntity expense = expenseRepository.findById(expenseId)
-				.orElseThrow(() -> new MyException("Expense not found"));
-		expense.setCategory(updatedExpense.getCategory());
-		expense.setAmount(updatedExpense.getAmount());
-		expense.setDate(updatedExpense.getDate() != null ? updatedExpense.getDate() : LocalDate.now());
-		return expenseRepository.save(expense);
-	}
+ 
 
-	// Delete expense
-	public void deleteExpense(Long expenseId) {
-		ExpenseEntity expense = expenseRepository.findById(expenseId)
-				.orElseThrow(() -> new MyException("Expense not found"));
-		expenseRepository.delete(expense);
-	}
+    public ExpenseEntity updateExpense(Long expenseId, ExpenseEntity updatedExpense, Long userId) {
+        ExpenseEntity expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new MyException("Expense not found"));
+        if (!expense.getUserId().equals(userId)) {
+            throw new MyException("You can only update your own expenses");
+        }
+        expense.setCategory(updatedExpense.getCategory());
+        expense.setAmount(updatedExpense.getAmount());
+        expense.setDate(updatedExpense.getDate() != null ? updatedExpense.getDate() : LocalDate.now());
+        return expenseRepository.save(expense);
+    }
+
+    public void deleteExpense(Long expenseId, Long userId) {
+        ExpenseEntity expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new MyException("Expense not found"));
+        if (!expense.getUserId().equals(userId)) {
+            throw new MyException("You can only delete your own expenses");
+        }
+        expenseRepository.delete(expense);
+    }
 	public ExpenseStatus checkExpenseStatus(ExpensePlanEntity plan) {
 	    long daysBetween = ChronoUnit.DAYS.between(plan.getStartDate(), plan.getEndDate());
 	    double dailyAmount = plan.getTotalAmount() / daysBetween;
@@ -122,6 +129,11 @@ public class ExpenseService {
 	    }
 
 	    return status;
+	}
+
+	public List<ExpenseEntity> findByUserId(Long userId) {
+		// TODO Auto-generated method stub
+		return expenseRepository.findByUserId(userId);
 	}
 
 }

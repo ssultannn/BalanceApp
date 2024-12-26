@@ -28,6 +28,9 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         JdbcDaoImpl jdbcDao = new JdbcDaoImpl();
         jdbcDao.setDataSource(dataSource);
+        // Query for retrieving user information
+        jdbcDao.setUsersByUsernameQuery("SELECT username, password, enabled FROM users WHERE username = ?");
+        jdbcDao.setAuthoritiesByUsernameQuery("SELECT username, role FROM user_roles WHERE username = ?");
         return jdbcDao;
     }
 
@@ -35,6 +38,7 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
+        // Use plaintext passwords (no encoding)
         return authProvider;
     }
 
@@ -42,17 +46,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
             .authorizeRequests()
-            .requestMatchers("/login", "/register").permitAll()  // Permit access to login and register for everyone
-            .requestMatchers("/h2-console/**").permitAll()  // Allow H2 console access
-            .requestMatchers("/swagger-ui/**").permitAll()  // Swagger UI access
-            .requestMatchers("/v3/api-docs/**").permitAll()  // Swagger API docs access
-            .anyRequest().permitAll()  // All other requests require authentication
+            .requestMatchers("/login", "/register").permitAll()  // Allow access to login and register
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole("USER")  // Swagger UI and docs for ROLE_USER only
+            .requestMatchers(HttpMethod.GET, "/users/**").hasRole("USER")
+            .requestMatchers(HttpMethod.POST, "/income/**").hasRole("USER")
+            .anyRequest().authenticated()
             .and()
-            .httpBasic() // Use basic authentication
+            .httpBasic()  // Enable Basic Authentication
             .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Stateless session
             .and()
-            .headers().frameOptions().disable()  // Allow the use of frames for H2 Console
+            .headers().frameOptions().disable()  // Allow frames for H2 console
             .and()
             .build();
     }
